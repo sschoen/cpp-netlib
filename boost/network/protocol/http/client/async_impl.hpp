@@ -13,6 +13,7 @@
 #include <functional>
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/strand.hpp>
+#include <boost/network/protocol/http/client/macros.hpp>
 #include <boost/network/protocol/http/traits/connection_policy.hpp>
 
 namespace boost {
@@ -31,7 +32,10 @@ struct async_client
   typedef typename resolver<Tag>::type resolver_type;
   typedef typename string<Tag>::type string_type;
 
-  typedef typename std::array<typename char_<Tag>::type, 1024>::const_iterator const_iterator;
+  typedef
+      typename std::array<typename char_<Tag>::type,
+                          BOOST_NETWORK_HTTP_CLIENT_CONNECTION_BUFFER_SIZE>::
+          const_iterator const_iterator;
   typedef iterator_range<const_iterator> char_const_range;
 
   typedef std::function<void(char_const_range,

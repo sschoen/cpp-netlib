@@ -38,19 +38,20 @@ namespace network {
 namespace http {
 namespace impl {
 
-template <class Tag>
+template <class buffer_type>
 struct chunk_encoding_parser {
+  typedef typename buffer_type::const_iterator const_iterator;
+  typedef boost::iterator_range<const_iterator> char_const_range;
+
   chunk_encoding_parser() : state(state_t::header), chunk_size(0) {}
 
   enum class state_t { header, header_end, data, data_end };
 
   state_t state;
   size_t chunk_size;
-  std::array<typename char_<Tag>::type, 1024> buffer;
+  buffer_type buffer;
 
-  void update_chunk_size(
-      boost::iterator_range<typename std::array<
-          typename char_<Tag>::type, 1024>::const_iterator> const &range) {
+  void update_chunk_size(char_const_range const &range) {
     if (range.empty()) return;
     std::stringstream ss;
     ss << std::hex << range;
@@ -60,11 +61,7 @@ struct chunk_encoding_parser {
     chunk_size = (chunk_size << (range.size() * 4)) | size;
   }
 
-  boost::iterator_range<
-      typename std::array<typename char_<Tag>::type, 1024>::const_iterator>
-      operator()(
-          boost::iterator_range<typename std::array<
-              typename char_<Tag>::type, 1024>::const_iterator> const &range) {
+  char_const_range operator()(char_const_range const &range) {
     auto iter = boost::begin(range);
     auto begin = iter;
     auto pos = boost::begin(buffer);
@@ -147,6 +144,7 @@ struct http_async_connection
   typedef typename delegate_factory<Tag>::type delegate_factory_type;
   typedef typename delegate_factory_type::connection_delegate_ptr
       connection_delegate_ptr;
+  typedef chunk_encoding_parser<typename protocol_base::buffer_type> chunk_encoding_parser_type;
 
   http_async_connection(resolver_type& resolver, resolve_function resolve,
                         bool follow_redirect, int timeout,
@@ -484,13 +482,14 @@ struct http_async_connection
             } else {
               string_type body_string;
               if (this->is_chunk_encoding && remove_chunk_markers_) {
-                for (size_t i = 0; i < this->partial_parsed.size(); i += 1024) {
+                const auto parse_buffer_size = parse_chunk_encoding.buffer.size();
+                for (size_t i = 0; i < this->partial_parsed.size(); i += parse_buffer_size) {
                   auto range = parse_chunk_encoding(boost::make_iterator_range(
-                      static_cast<typename std::array<typename char_<Tag>::type, 1024>::const_iterator>(
-                          this->partial_parsed.data()) + i,
-                      static_cast<typename std::array<typename char_<Tag>::type, 1024>::const_iterator>(
-                          this->partial_parsed.data()) +
-                          std::min(i + 1024, this->partial_parsed.size())));
+                      static_cast<
+                          typename chunk_encoding_parser_type::const_iterator>(this->partial_parsed.data()) + i,
+                      static_cast<
+                          typename chunk_encoding_parser_type::const_iterator>(this->partial_parsed.data()) +
+                          std::min(i + parse_buffer_size, this->partial_parsed.size())));
                   body_string.append(boost::begin(range), boost::end(range));
                 }
                 this->partial_parsed.clear();
@@ -602,7 +601,7 @@ struct http_async_connection
   connection_delegate_ptr delegate_;
   boost::asio::streambuf command_streambuf;
   string_type method;
-  chunk_encoding_parser<Tag> parse_chunk_encoding;
+  chunk_encoding_parser_type parse_chunk_encoding;
 };
 
 }  // namespace impl

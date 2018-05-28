@@ -13,6 +13,7 @@
 #include <array>
 #include <boost/logic/tribool.hpp>
 #include <boost/network/detail/debug.hpp>
+#include <boost/network/protocol/http/client/macros.hpp>
 #include <boost/network/protocol/http/algorithms/linearize.hpp>
 #include <boost/network/protocol/http/parser/incremental.hpp>
 #include <boost/network/protocol/http/request_parser.hpp>
@@ -400,8 +401,8 @@ struct http_async_protocol_handler {
   }
 
   typedef response_parser<Tag> response_parser_type;
-  // TODO(dberris): make 1024 go away and become a configurable value.
-  typedef std::array<typename char_<Tag>::type, 1024> buffer_type;
+  typedef std::array<typename char_<Tag>::type,
+                     BOOST_NETWORK_HTTP_CLIENT_CONNECTION_BUFFER_SIZE> buffer_type;
 
   response_parser_type response_parser_;
   boost::promise<string_type> version_promise;

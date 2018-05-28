@@ -31,7 +31,10 @@ struct async_connection_base {
   typedef typename string<Tag>::type string_type;
   typedef basic_request<Tag> request;
   typedef basic_response<Tag> response;
-  typedef typename std::array<typename char_<Tag>::type, 1024>::const_iterator const_iterator;
+  typedef
+      typename std::array<typename char_<Tag>::type,
+                          BOOST_NETWORK_HTTP_CLIENT_CONNECTION_BUFFER_SIZE>::
+          const_iterator const_iterator;
   typedef iterator_range<const_iterator> char_const_range;
   typedef std::function<void(char_const_range const &, boost::system::error_code const &)>
       body_callback_function_type;

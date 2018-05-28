@@ -30,7 +30,10 @@ struct async_connection_policy : resolver_policy<Tag>::type {
   typedef typename resolver_base::resolve_function resolve_function;
   typedef typename resolver_base::resolve_completion_function
       resolve_completion_function;
-  typedef typename std::array<typename char_<Tag>::type, 1024>::const_iterator const_iterator;
+  typedef
+      typename std::array<typename char_<Tag>::type,
+                          BOOST_NETWORK_HTTP_CLIENT_CONNECTION_BUFFER_SIZE>::
+          const_iterator const_iterator;
   typedef iterator_range<const_iterator> char_const_range;
   typedef std::function<void(char_const_range,
                              boost::system::error_code const&)>

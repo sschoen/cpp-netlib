@@ -21,7 +21,6 @@
 #include <string>
 
 #include <boost/network/protocol/http/client/facade.hpp>
-#include <boost/network/protocol/http/client/macros.hpp>
 #include <boost/network/protocol/http/client/options.hpp>
 
 namespace boost {

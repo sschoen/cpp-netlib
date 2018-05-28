@@ -40,7 +40,10 @@ class basic_client_facade {
   /** The response type. This models the HTTP Response concept.*/
   typedef basic_response<Tag> response;
 
-  typedef typename std::array<typename char_<Tag>::type, 1024>::const_iterator const_iterator;
+  typedef
+      typename std::array<typename char_<Tag>::type,
+                          BOOST_NETWORK_HTTP_CLIENT_CONNECTION_BUFFER_SIZE>::
+          const_iterator const_iterator;
   typedef iterator_range<const_iterator> char_const_range;
 
   /**
