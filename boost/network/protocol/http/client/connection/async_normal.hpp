@@ -51,7 +51,8 @@ struct chunk_encoding_parser {
   size_t chunk_size;
   buffer_type buffer;
 
-  void update_chunk_size(char_const_range const &range) {
+  template<typename T>
+  void update_chunk_size(boost::iterator_range<T> const &range) {
     if (range.empty()) return;
     std::stringstream ss;
     ss << std::hex << range;
@@ -61,7 +62,8 @@ struct chunk_encoding_parser {
     chunk_size = (chunk_size << (range.size() * 4)) | size;
   }
 
-  char_const_range operator()(char_const_range const &range) {
+  template<typename T>
+  char_const_range operator()(boost::iterator_range<T> const &range) {
     auto iter = boost::begin(range);
     auto begin = iter;
     auto pos = boost::begin(buffer);
@@ -485,10 +487,8 @@ struct http_async_connection
                 const auto parse_buffer_size = parse_chunk_encoding.buffer.size();
                 for (size_t i = 0; i < this->partial_parsed.size(); i += parse_buffer_size) {
                   auto range = parse_chunk_encoding(boost::make_iterator_range(
-                      static_cast<
-                          typename chunk_encoding_parser_type::const_iterator>(this->partial_parsed.data()) + i,
-                      static_cast<
-                          typename chunk_encoding_parser_type::const_iterator>(this->partial_parsed.data()) +
+                      this->partial_parsed.cbegin() + i,
+                      this->partial_parsed.cbegin() +
                           std::min(i + parse_buffer_size, this->partial_parsed.size())));
                   body_string.append(boost::begin(range), boost::end(range));
                 }
