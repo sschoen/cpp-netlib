@@ -16,6 +16,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/network/protocol/http/request.hpp>
 #include <boost/network/protocol/http/traits/resolver_policy.hpp>
+#include <boost/network/compat.hpp>
 
 namespace boost {
 namespace network {
@@ -60,11 +61,11 @@ struct https_sync_connection
       long ssl_options = 0)
       : connection_base(),
         timeout_(timeout),
-        timer_(resolver.get_io_service()),
+        timer_(CPP_NETLIB_ASIO_GET_IO_SERVICE(resolver)),
         resolver_(resolver),
         resolve_(std::move(resolve)),
-        context_(resolver.get_io_service(), boost::asio::ssl::context::sslv23_client),
-        socket_(resolver.get_io_service(), context_) {
+        context_(CPP_NETLIB_ASIO_GET_IO_SERVICE(resolver), boost::asio::ssl::context::sslv23_client),
+        socket_(CPP_NETLIB_ASIO_GET_IO_SERVICE(resolver), context_) {
     if (ciphers) {
       ::SSL_CTX_set_cipher_list(context_.native_handle(), ciphers->c_str());
     }

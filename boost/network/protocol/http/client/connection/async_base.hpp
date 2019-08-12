@@ -16,6 +16,7 @@
 #include <boost/network/protocol/http/client/connection/async_normal.hpp>
 #include <boost/network/protocol/http/traits/resolver_policy.hpp>
 #include <boost/network/traits/string.hpp>
+#include <boost/network/compat.hpp>
 
 namespace boost {
 namespace network {
@@ -59,7 +60,7 @@ struct async_connection_base {
         async_connection;
     typedef typename delegate_factory<Tag>::type delegate_factory_type;
     auto delegate = delegate_factory_type::new_connection_delegate(
-        resolver.get_io_service(), https, always_verify_peer,
+        CPP_NETLIB_ASIO_GET_IO_SERVICE(resolver), https, always_verify_peer,
         certificate_filename, verify_path, certificate_file, private_key_file,
         ciphers, sni_hostname, ssl_options);
     auto temp = std::make_shared<async_connection>(

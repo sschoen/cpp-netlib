@@ -16,6 +16,7 @@
 #include <boost/network/protocol/http/response.hpp>
 #include <boost/network/protocol/http/traits/resolver_policy.hpp>
 #include <boost/network/traits/string.hpp>
+#include <boost/network/compat.hpp>
 
 namespace boost {
 namespace network {
@@ -49,10 +50,10 @@ struct http_sync_connection
                        int timeout)
       : connection_base(),
         timeout_(timeout),
-        timer_(resolver.get_io_service()),
+        timer_(CPP_NETLIB_ASIO_GET_IO_SERVICE(resolver)),
         resolver_(resolver),
         resolve_(std::move(resolve)),
-        socket_(resolver.get_io_service()) {}
+        socket_(CPP_NETLIB_ASIO_GET_IO_SERVICE(resolver)) {}
 
   void init_socket(string_type const& hostname, string_type const& port) {
     connection_base::init_socket(socket_, resolver_, hostname, port, resolve_);

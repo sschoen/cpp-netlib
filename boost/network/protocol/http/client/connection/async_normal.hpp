@@ -32,6 +32,7 @@
 #include <boost/range/algorithm/transform.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <boost/throw_exception.hpp>
+#include <boost/network/compat.hpp>
 
 namespace boost {
 namespace network {
@@ -154,12 +155,12 @@ struct http_async_connection
                         connection_delegate_ptr delegate)
       : timeout_(timeout),
         remove_chunk_markers_(remove_chunk_markers),
-        timer_(resolver.get_io_service()),
+        timer_(CPP_NETLIB_ASIO_GET_IO_SERVICE(resolver)),
         is_timedout_(false),
         follow_redirect_(follow_redirect),
         resolver_(resolver),
         resolve_(std::move(resolve)),
-        request_strand_(resolver.get_io_service()),
+        request_strand_(CPP_NETLIB_ASIO_GET_IO_SERVICE(resolver)),
         delegate_(std::move(delegate)) {}
 
   // This is the main entry point for the connection/request pipeline.
