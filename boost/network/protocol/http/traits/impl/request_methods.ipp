@@ -30,6 +30,11 @@ struct request_methods<tags::http_default_8bit_tcp_resolve> {
     return PUT;
   };
 
+  static char const* patch() {
+    static char const* const PATCH = "PATCH";
+    return PATCH;
+  };
+
   static char const* post() {
     static char const* const POST = "POST";
     return POST;

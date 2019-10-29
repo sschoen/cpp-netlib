@@ -120,26 +120,8 @@ class basic_client_facade {
       body_callback_function_type body_handler = body_callback_function_type(),
       body_generator_function_type body_generator =
           body_generator_function_type()) {
-    if (body != string_type()) {
-      request << remove_header("Content-Length")
-              << header("Content-Length", std::to_string(body.size()))
-              << boost::network::body(body);
-    }
-    typename headers_range<basic_request<Tag> >::type content_type_headers =
-        headers(request)["Content-Type"];
-    if (content_type != string_type()) {
-      if (!boost::empty(content_type_headers))
-        request << remove_header("Content-Type");
-      request << header("Content-Type", content_type);
-    } else {
-      if (boost::empty(content_type_headers)) {
-        typedef typename char_<Tag>::type char_type;
-        static char_type const content_type[] = "x-application/octet-stream";
-        request << header("Content-Type", content_type);
-      }
-    }
-    return pimpl->request_skeleton(request, "POST", true, body_handler,
-                                   body_generator);
+    return perform_request(request, "POST", body, content_type,
+                           body_handler, body_generator);
   }
 
   /**
@@ -225,26 +207,8 @@ class basic_client_facade {
       body_callback_function_type body_handler = body_callback_function_type(),
       body_generator_function_type body_generator =
           body_generator_function_type()) {
-    if (body != string_type()) {
-      request << remove_header("Content-Length")
-              << header("Content-Length", std::to_string(body.size()))
-              << boost::network::body(body);
-    }
-    typename headers_range<basic_request<Tag> >::type content_type_headers =
-        headers(request)["Content-Type"];
-    if (content_type != string_type()) {
-      if (!boost::empty(content_type_headers))
-        request << remove_header("Content-Type");
-      request << header("Content-Type", content_type);
-    } else {
-      if (boost::empty(content_type_headers)) {
-        typedef typename char_<Tag>::type char_type;
-        static char_type const content_type[] = "x-application/octet-stream";
-        request << header("Content-Type", content_type);
-      }
-    }
-    return pimpl->request_skeleton(request, "PUT", true, body_handler,
-                                   body_generator);
+    return perform_request(request, "PUT", body, content_type,
+                           body_handler, body_generator);
   }
 
   /**
@@ -282,6 +246,117 @@ class basic_client_facade {
                body_callback_function_type body_handler,
                body_generator_function_type body_generator = {}) {
     return put(request, body, string_type(), body_handler, body_generator);
+  }
+
+  /**
+   * Perform a PATCH request.
+   *
+   * @param[in] request A copy of the request object including the URI and
+   *   headers.
+   * @param[in] body The whole contents of the body. If provided, this overrides
+   *   the body in the `request`.
+   * @param[in] content_type The content type for the request. This overrides
+   *   the content type in the `request`.
+   * @param[in] body_handler The callback invoked for parts of the response body
+   *   as they come in.
+   * @param[in] body_generator If provided, is invoked to generate parts of the
+   *   request's body as it is being sent.
+   * @returns A response object.
+   * @throws std::exception May throw exceptions on errors, derived from
+   *   `std::exception`.
+   */
+  response patch(
+      request request, string_type const& body = string_type(),
+      string_type const& content_type = string_type(),
+      body_callback_function_type body_handler = body_callback_function_type(),
+      body_generator_function_type body_generator =
+          body_generator_function_type()) {
+    return perform_request(request, "PATCH", body, content_type,
+                           body_handler, body_generator);
+  }
+
+  /**
+   * Perform a PATCH request.
+   *
+   * @param[in] request The request including the URI and headers.
+   * @param[in] callback If provided, the function to call for parts of the
+   *   response's body as they come in.
+   * @param[in] body_generator The function to call to generate part of the body
+   *   while the request is being performed.
+   * @returns A response object.
+   * @throws std::exception May throw exceptions derived from std::exception in
+   *   case of errors.
+   */
+  response patch(request const& request, body_callback_function_type callback,
+               body_generator_function_type body_generator =
+                   body_generator_function_type()) {
+    return patch(request, string_type(), string_type(), callback, body_generator);
+  }
+
+  /**
+   * Perform a PATCH request.
+   *
+   * @param[in] request The request object including the URI and headers.
+   * @param[in] body The whole contents of the body.
+   * @param[in] body_handler The callback invoked for parts of the response body
+   *   as they come in.
+   * @param[in] body_generator If provided, is invoked to generate parts of the
+   *   request's body as it is being sent.
+   * @returns A response object.
+   * @throws std::exception May throw exceptions on errors, derived from
+   *   `std::exception`.
+   */
+  response patch(request const& request, string_type body,
+               body_callback_function_type body_handler,
+               body_generator_function_type body_generator = {}) {
+    return patch(request, body, string_type(), body_handler, body_generator);
+  }
+
+  /**
+   * Perform a request.
+   *
+   * @param[in] request A copy of the request object including the URI and
+   *   headers.
+   * @param[in] method The HTTP method
+   * @param[in] body The whole contents of the body. If provided, this overrides
+   *   the body in the `request`.
+   * @param[in] content_type The content type for the request. This overrides
+   *   the content type in the `request`.
+   * @param[in] body_handler The callback invoked for parts of the response body
+   *   as they come in.
+   * @param[in] body_generator If provided, is invoked to generate parts of the
+   *   request's body as it is being sent.
+   * @returns A response object.
+   * @throws std::exception May throw exceptions on errors, derived from
+   *   `std::exception`.
+   */
+  response perform_request(request request, string_type const& method,
+                           string_type const& body = string_type(),
+                           string_type const& content_type = string_type(),
+                           body_callback_function_type body_handler =
+                                body_callback_function_type(),
+                           body_generator_function_type body_generator =
+                                body_generator_function_type()) {
+    if (body != string_type()) {
+      request << remove_header("Content-Length")
+              << header("Content-Length", std::to_string(body.size()))
+              << boost::network::body(body);
+    }
+    typename headers_range<basic_request<Tag> >::type content_type_headers =
+        headers(request)["Content-Type"];
+    if (content_type != string_type()) {
+      if (!boost::empty(content_type_headers))
+        request << remove_header("Content-Type");
+      request << header("Content-Type", content_type);
+    } else {
+      if (boost::empty(content_type_headers)) {
+        typedef typename char_<Tag>::type char_type;
+        static char_type const content_type[] = "x-application/octet-stream";
+        request << header("Content-Type", content_type);
+      }
+    }
+    return pimpl->request_skeleton(request, method, true, body_handler,
+                                   body_generator);
   }
 
   /**
