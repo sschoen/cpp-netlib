@@ -29,22 +29,22 @@ int main(int argc, char* argv[]) {
     ;
 
   options.parse_positional(std::vector<std::string>{"source"});
-  options.parse(argc, argv);
+  auto optionsResults = options.parse(argc, argv);
 
-  if (options.count("help")) {
+  if (optionsResults.count("help")) {
     std::cout << options.help({"", "Group"}) << std::endl;
     return EXIT_SUCCESS;
   }
 
-  if (options.count("source") < 1) {
+  if (optionsResults.count("source") < 1) {
     std::cout << "Error: Source URL required." << std::endl;
     std::cout << options.help({"", "Group"}) << std::endl;
     return EXIT_FAILURE;
   }
 
-  std::string source = options["source"].as<std::string>();
-  bool show_headers = options.count("headers") ? true : false;
-  bool show_status = options.count("status") ? true : false;
+  std::string source = optionsResults["source"].as<std::string>();
+  bool show_headers = optionsResults.count("headers") ? true : false;
+  bool show_status = optionsResults.count("status") ? true : false;
 
   http::client::request request(source);
   http::client::string_type destination_ = host(request);

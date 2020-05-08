@@ -5,6 +5,7 @@
 
 include_directories(${CPP-NETLIB_SOURCE_DIR})
 include_directories(${CPP-NETLIB_SOURCE_DIR}/deps/cxxopts/src)
+include_directories(${CPP-NETLIB_SOURCE_DIR}/deps/cxxopts/include)
 if (OPENSSL_FOUND)
   include_directories(${OPENSSL_INCLUDE_DIR})
 endif (OPENSSL_FOUND)
