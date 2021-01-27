@@ -36,18 +36,21 @@ struct async_resolver : std::enable_shared_from_this<async_resolver<Tag> > {
   typedef std::function<void(resolver_type &, string_type, std::uint16_t,
                              resolve_completion_function)> resolve_function;
 
+  void clear_resolved_cache() { clear_cache_.store(true); }
+
  protected:
   bool cache_resolved_;
+  std::atomic<bool> clear_cache_;
   endpoint_cache endpoint_cache_;
   std::shared_ptr<boost::asio::io_service> service_;
   std::shared_ptr<boost::asio::io_service::strand> resolver_strand_;
 
   explicit async_resolver(bool cache_resolved)
-      : cache_resolved_(cache_resolved), endpoint_cache_() {}
+      : cache_resolved_(cache_resolved), clear_cache_(false), endpoint_cache_() {}
 
   void resolve(resolver_type &resolver_, string_type const &host,
                std::uint16_t port, resolve_completion_function once_resolved) {
-    if (cache_resolved_) {
+    if (cache_resolved_ && !clear_cache_.load()) {
       typename endpoint_cache::iterator iter =
           endpoint_cache_.find(boost::to_lower_copy(host));
       if (iter != endpoint_cache_.end()) {
@@ -74,6 +77,9 @@ struct async_resolver : std::enable_shared_from_this<async_resolver<Tag> > {
     typename endpoint_cache::iterator iter;
     bool inserted = false;
     if (!ec && cache_resolved_) {
+      if (clear_cache_.exchange(false)) {
+        endpoint_cache_.clear();
+      }
       std::tie(iter, inserted) = endpoint_cache_.insert(std::make_pair(
           host, std::make_pair(endpoint_iterator, resolver_iterator())));
       once_resolved(ec, iter->second);
