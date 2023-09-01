@@ -13,12 +13,12 @@
 #include <memory>
 #include <boost/asio/async_result.hpp>
 #include <boost/asio/basic_socket.hpp>
+#include <boost/asio/basic_stream_socket.hpp>
 #include <boost/asio/detail/config.hpp>
 #include <boost/asio/detail/handler_type_requirements.hpp>
 #include <boost/asio/detail/push_options.hpp>
 #include <boost/asio/detail/throw_error.hpp>
 #include <boost/asio/error.hpp>
-#include <boost/asio/stream_socket_service.hpp>
 #include <cstddef>
 
 #ifdef BOOST_NETWORK_ENABLE_HTTPS
