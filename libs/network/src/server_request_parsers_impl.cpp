@@ -12,6 +12,7 @@
 #include <boost/spirit/include/qi.hpp>
 #include <boost/fusion/adapted/std_tuple.hpp>
 #include <boost/network/protocol/http/message/header.hpp>
+#include <boost/regex/pending/unicode_iterator.hpp>
 
 namespace boost {
 namespace spirit {
@@ -22,7 +23,7 @@ typedef std::basic_string<uint32_t> u32_string;
 template <>  // <typename Attrib, typename T, typename Enable>
 struct assign_to_container_from_value<std::string, u32_string, void> {
   static void call(u32_string const& val, std::string& attr) {
-    u32_to_u8_iterator<u32_string::const_iterator> begin = val.begin(),
+    boost::u32_to_u8_iterator<u32_string::const_iterator> begin = val.begin(),
                                                    end = val.end();
     for (; begin != end; ++begin) attr += *begin;
   }
